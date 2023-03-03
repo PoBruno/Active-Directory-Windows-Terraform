@@ -1,4 +1,4 @@
-﻿# Bruno Gomes
+# Bruno Gomes
 # Populate AD
 ##############
 
