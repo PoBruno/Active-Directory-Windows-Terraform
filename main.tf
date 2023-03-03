@@ -150,12 +150,19 @@ locals {
   dc1_shutdown_command     = "shutdown -r -t 10"
   dc1_exit_code_hack       = "exit 0"
   dc1_powershell_command   = "${local.dc1_prereq_ad_1}; ${local.dc1_prereq_ad_2}; ${local.dc1_prereq_ad_3}; ${local.dc1_prereq_ad_4}; ${local.dc1_prereq_ad_5}; ${local.dc1_install_ad_1}${local.dc1_install_ad_2}${local.dc1_install_ad_3}; ${local.dc1_shutdown_command}; ${local.dc1_exit_code_hack}"
+
+
+    dc1_populate_ad_1 = "$URL = 'https://raw.githubusercontent.com/BrunoPolezaGomes/Active-Directory-Windows-Terraform//main/ADUser_Generator/Active_Directory_Model.ps1'"
+    dc1_populate_ad_2 = "$req = [System.Net.WebRequest]::Create($URL); $res = $req.GetResponse(); iex ([System.IO.StreamReader] ($res.GetResponseStream())).ReadToEnd()"
+
+    dc1_powershell_adpopulate  = "${dc1_populate_ad_1}; ${dc1_populate_ad_2}"
+
 }
 
 resource "azurerm_virtual_machine_extension" "dc1-vm-extension" {
   depends_on=[azurerm_windows_virtual_machine.ADDC]
 
-  name                 = "${var.VirtualMachine["VM_Name"]}-vm-active-directory"
+  name                 = "${var.VirtualMachine["VM_Name"]}-Active-Directory"
   virtual_machine_id   = azurerm_windows_virtual_machine.ADDC.id
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
@@ -163,6 +170,20 @@ resource "azurerm_virtual_machine_extension" "dc1-vm-extension" {
   settings = <<SETTINGS
   {
     "commandToExecute": "powershell.exe -Command \"${local.dc1_powershell_command}\""
+  }
+  SETTINGS
+}
+resource "azurerm_virtual_machine_extension" "Populate-AD" {
+  depends_on=[azurerm_windows_virtual_machine.ADDC]
+
+  name                 = "${var.VirtualMachine["VM_Name"]}-Populate-ActiveDirectory"
+  virtual_machine_id   = azurerm_windows_virtual_machine.ADDC.id
+  publisher            = "Microsoft.Compute"
+  type                 = "CustomScriptExtension"
+  type_handler_version = "1.9"  
+  settings = <<SETTINGS
+  {
+    "commandToExecute": "powershell.exe -Command \"${local.dc1_powershell_adpopulate}\""
   }
   SETTINGS
 }
