@@ -9,20 +9,19 @@ $OU = "OU="+$OUCompany+","+$ADDomain.DistinguishedName
 New-ADOrganizationalUnit -Name $OUCompany -Path $Root -ProtectedFromAccidentalDeletion $False
 
 $departments = @(
-    [pscustomobject]@{"Name" = "Contabilidade"; Positions = ("Gerente", "Contador", "Escrituração")},
-    [pscustomobject]@{"Name" = "Consultoria"; Positions = ("Gerente", "Administrador")},
-    [pscustomobject]@{"Name" = "Atendimento ao cliente"; Positions = ("Treinador", "CS Rep Lvl 1", "CS Rep Lvl 2")},
+    [pscustomobject]@{"Name" = "Contabilidade"; Positions = ("Gerente", "Contador", "Escrituração", "Gerente de Auditoria Interna", "Gerente de Contabilidade", "Auxiliar de Contabilidade", "Contador Gerencial", "Consultor Fiscal", "Assistente de Contabilidade") },
+    [pscustomobject]@{"Name" = "Consultoria"; Positions = ("Gerente", "Administrador", "Consultoria de Finanças", "Consultoria de Marketing", "Estruturação") },
+    [pscustomobject]@{"Name" = "Atendimento ao cliente"; Positions = ("Gestor de Atendimento ao Cliente", "Atendimento Pleno", "Atendimento Junior", "Assistente de Atendimento ao Cliente", "Treinador", "Call Center", "Representantes de suporte ao cliente") },
     [pscustomobject]@{"Name" = "Engenharia"; Positions = ("Gerente", "Engenheiro Nível 1", "Engenheiro Nível 2", "Engenheiro Nível 3")},
-    [pscustomobject]@{"Name" = "Executivo"; Positions = ("Executivo", "Assistente Executivo")},
-    [pscustomobject]@{"Name" = "Financeiro"; Positions = ("Gerente", "Assessor Financeiro", "Estagiário Financeiro", "Faturamento", "Cobranças")},
-    [pscustomobject]@{"Name" = "Recursos Humanos"; Positions = ("Gerente", "HR Lvl 1", "HR Lvl 2")},
-    [pscustomobject]@{"Name" = "Fabricação"; Positions = ("Gerente", "Fabricação Nível 1", "Fabricação Nível 2", "Fabricação Nível 3")},
-    [pscustomobject]@{"Name" = "Marketing"; Positions = ("Gerente", "Especialista em Mídia Social", "Líder da Comunidade")},
-    [pscustomobject]@{"Name" = "Compras"; Positions = ("Gerente", "Comprador", "Pedido")},
-    [pscustomobject]@{"Name" = "Qualidade"; Positions = ("Gerente", "QA Nível 1", "QA Nível 2", "QA Nível 3")},
-    [pscustomobject]@{"Name" = "Vendas"; Positions = ("Gerente", "Representante de Vendas Regional.", "Representante de Vendas Nacional", "Novo Negócio")},
-    [pscustomobject]@{"Name" = "Treinamento"; Positions = ("Treinador", "Treinador Nível 1", "Treinador Nível 2")}
-)
+    [pscustomobject]@{"Name" = "Executivo"; Positions = ("Executivo", "Assistente Executivo","Assistente Executivo","Auxiliar Executivo")},
+    [pscustomobject]@{"Name" = "Financeiro"; Positions = ("Gerente", "Assessor Financeiro", "Estagiário Financeiro", "Faturamento", "Cobranças", "Assistente de Faturamento", "Assistente de Cobranças", "Auxiliar Financeiro") },
+    [pscustomobject]@{"Name" = "Recursos Humanos"; Positions = ("Gerente", "Recrutamento e Seleção", "Departamento Pessoal", "Treinamento e Desenvolvimento", "Consultoria de Recursos Humanos", "Departamento Pessoal", "Assistente Departamento Pessoal", "Auxiliar Departamento Pessoal") },
+    [pscustomobject]@{"Name" = "Fabricação"; Positions = ("Gerente", "Setor Primário", "Auxiliar Setor Primário", "Operador de Manufatura I", "Operador de Manufatura II", "Fabricação Nível 2", "Fabricação Nível 3") },
+    [pscustomobject]@{"Name" = "Marketing"; Positions = ("Gerente", "Especialista em Mídia Social", "Líder da Comunidade", "Marketing Digital", "Assistente de Marketing Digital", "Marketing Interno", "Assistente de Marketing Interno", "Marketing de Conteúdo", "Assistente Marketing de Conteúdo") },
+    [pscustomobject]@{"Name" = "Compras"; Positions = ("Gerente", "Assistente de Compras", "Analista de Compras", "Comprador Junior", "Comprador Pleno", "Comprador Sênior", "Pedido") },
+    [pscustomobject]@{"Name" = "Qualidade"; Positions = ("Gerente", "Analista de Controle de Qualidade", "Assistente de Controle de Qualidade", "Auxiliar de Controle de Qualidade", "Auditor de Controle de Qualidade", "Consultor de Qualidade", "Coordenador de Qualidade", "Gerente de Controle de Qualidade", "Supervisor de Controle de Qualidade") },
+    [pscustomobject]@{"Name" = "Vendas"; Positions = ("Gerente", "Representante de Vendas Regional.", "Representante de Vendas Nacional", "Novo Negócio")}
+    )
 
 $DPaths = @("Groups","Computers","Users")
 $UC = ","+$OU
@@ -94,7 +93,7 @@ ForEach ($Cidade in $Cidades) {
         catch{}
     
     New-ADUser -AccountPassword $securePassword -Company $company -Department $department.Name -DisplayName $displayName -EmailAddress "$sAMAccountName@$UPNDomain" -Enabled $True -GivenName $Fname -Name $displayName -OfficePhone $phonenumber -Path $OUUser -SamAccountName $sAMAccountName -Surname $Lname -Title $title -Description $Description -Office $Office -UserPrincipalName "$sAMAccountName@$UPNDomain"
-    Write-Host "$UserCount de $i    --   $displayName  -  $($sAMAccountName)@$($UPNDomain)" -ForegroundColor Green
+    #Write-Host "$UserCount de $i    --   $displayName  -  $($sAMAccountName)@$($UPNDomain)" -ForegroundColor Green
     Add-ADGroupMember -Identity $SamaGroup -Members $sAMAccountName
                         $UserCount += 1
                         
@@ -106,7 +105,7 @@ ForEach ($Cidade in $Cidades) {
              
             }
         }
-        $departmentIndex += 1
+      $departmentIndex += 1
     }
 
 
