@@ -76,7 +76,7 @@ ForEach ($Cidade in $Cidades) {
                     [string]$sAMAccountName = $firstletter + "." + "$($firstletter.Substring($firstletter.Length-1))" + $LName.ToLower().split(" ")[0].replace("'", "")
                     $userExists = $false
                     
-                        
+                    $sAMAccountName
 
 
                     $title = $departments[$departmentIndex].Positions[$(Get-Random -Minimum 0 -Maximum $departments[$departmentIndex].Positions.Count)]
@@ -96,9 +96,9 @@ ForEach ($Cidade in $Cidades) {
         try {New-ADGroup -Name $GroupName -SamAccountName $SamAGroup -GroupCategory Security -GroupScope Global -DisplayName $GroupName -Path $OUAGroups}
         catch{}
     
-                        New-ADUser -AccountPassword $securePassword -Company $company -Department $department.Name -DisplayName $displayName -EmailAddress "$($sAMAccountName)$($UPNDomain)" -Enabled $True -GivenName $Fname -Name $displayName -OfficePhone $phonenumber -Path $OUUser -SamAccountName $sAMAccountName -Surname $Lname -Title $title -Description $Description -Office $Office -UserPrincipalName "$($sAMAccountName)$($UPNDomain)" -
+                        New-ADUser -AccountPassword $securePassword -Company $company -Department $department.Name -DisplayName $displayName -EmailAddress "$($sAMAccountName)$($UPNDomain)" -Enabled $True -GivenName $Fname -Name $displayName -OfficePhone $phonenumber -Path $OUUser -SamAccountName $sAMAccountName -Surname $Lname -Title $title -Description $Description -Office $Office -UserPrincipalName "$($sAMAccountName)$($UPNDomain)"
 
-                        Set-ADUser -Identity $username -Add @{'proxyAddresses' = "SMTP:$($sAMAccountName)$($UPNDomain)"}
+                        Set-ADUser -Identity $sAMAccountName -Add @{'proxyAddresses' = "SMTP:$($sAMAccountName)$($UPNDomain)" }
 
     #Write-Host "$UserCount de $i    --   $displayName  -  $($sAMAccountName)@$($UPNDomain)" -ForegroundColor Green
     Add-ADGroupMember -Identity $SamaGroup -Members $sAMAccountName
