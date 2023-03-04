@@ -2,9 +2,9 @@
 variable "resource_group_name" {
     type = map(string)
   default = {
-    "name"          = "Lab"
+    "name"          = "ADLab"
     "location"      = "eastus"
-    "storage"       = "adlab10002"
+    "storage"       = "addclab1002"
  }
 }
 
@@ -74,3 +74,25 @@ variable "tags" {
 #############################################
 
 
+variable "resource_group_location" {
+  default     = "eastus"
+}
+
+variable "prefix" {
+  type        = string
+  default     = "win-vm-iis"
+  description = "Prefix of the resource name"
+}
+
+output "resource_group_name" {
+  value = azurerm_resource_group.rg.name
+}
+
+output "public_ip_address" {
+  value = azurerm_windows_virtual_machine.main.public_ip_address
+}
+
+output "admin_password" {
+  sensitive = true
+  value     = azurerm_windows_virtual_machine.main.admin_password
+}
