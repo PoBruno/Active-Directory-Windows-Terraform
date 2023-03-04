@@ -146,46 +146,56 @@ locals {
   dc1_install_ad_1         = "Install-ADDSForest -DomainName ${var.VirtualMachine["ad_domain_name"]} -DomainNetbiosName ${var.VirtualMachine["ad_domain_netbios_name"]} -DomainMode ${var.VirtualMachine["ad_domain_mode"]} -ForestMode ${var.VirtualMachine["ad_domain_mode"]} "
   dc1_install_ad_2         = "-DatabasePath ${var.VirtualMachine["ad_database_path"]} -SysvolPath ${var.VirtualMachine.ad_sysvol_path} -LogPath ${var.VirtualMachine.ad_log_path} -NoRebootOnCompletion:$false -Force:$true "
   dc1_install_ad_3         = "-SafeModeAdministratorPassword (ConvertTo-SecureString ${var.VirtualMachine["ad_safe_mode_administrator_password"]} -AsPlainText -Force)"
-  
+
   dc1_shutdown_command     = "shutdown -r -t 10"
   dc1_exit_code_hack       = "exit 0"
-  dc1_powershell_command   = "${local.dc1_prereq_ad_1}; ${local.dc1_prereq_ad_2}; ${local.dc1_prereq_ad_3}; ${local.dc1_prereq_ad_4}; ${local.dc1_prereq_ad_5}; ${local.dc1_install_ad_1}${local.dc1_install_ad_2}${local.dc1_install_ad_3}; ${local.dc1_shutdown_command}; ${local.dc1_exit_code_hack}"
 
+  dc1_powershell_command   = "${local.dc1_prereq_ad_1}; ${local.dc1_prereq_ad_2}; ${local.dc1_prereq_ad_3}; ${local.dc1_prereq_ad_4}; ${local.dc1_prereq_ad_5}; ${local.dc1_install_ad_1}${local.dc1_install_ad_2}${local.dc1_install_ad_3};${local.dc1_populate_ad_1}; ${local.dc1_populate_ad_2}; ${local.dc1_shutdown_command}; ${local.dc1_exit_code_hack}"
 
-    dc1_populate_ad_1 = "$URL = 'https://raw.githubusercontent.com/BrunoPolezaGomes/Active-Directory-Windows-Terraform//main/ADUser_Generator/Active_Directory_Model.ps1'"
-    dc1_populate_ad_2 = "$req = [System.Net.WebRequest]::Create($URL); $res = $req.GetResponse(); iex ([System.IO.StreamReader] ($res.GetResponseStream())).ReadToEnd()"
-
-    dc1_powershell_adpopulate  = "${dc1_populate_ad_1}; ${dc1_populate_ad_2}"
+dc1_populate_ad_1 = "$URL = 'https://raw.githubusercontent.com/BrunoPolezaGomes/Active-Directory-Windows-Terraform//main/ADUser_Generator/Active_Directory_Model.ps1'"
+dc1_populate_ad_2 = "$req = [System.Net.WebRequest]::Create($URL); $res = $req.GetResponse(); iex ([System.IO.StreamReader] ($res.GetResponseStream())).ReadToEnd()"
+dc1_powershell_adpopulate  = "${local.dc1_populate_ad_1}; ${local.dc1_populate_ad_2}"
+    
 
 }
 
 resource "azurerm_virtual_machine_extension" "dc1-vm-extension" {
   depends_on=[azurerm_windows_virtual_machine.ADDC]
 
-  name                 = "${var.VirtualMachine["VM_Name"]}-Active-Directory"
-  virtual_machine_id   = azurerm_windows_virtual_machine.ADDC.id
-  publisher            = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"  
-  settings = <<SETTINGS
-  {
+    name                 = "${var.VirtualMachine["VM_Name"]}-Install-Active-Directory"
+    virtual_machine_id   = azurerm_windows_virtual_machine.ADDC.id
+    publisher            = "Microsoft.Compute"
+    type                 = "CustomScriptExtension"
+    type_handler_version = "1.9"  
+    settings = <<SETTINGS
+    {
     "commandToExecute": "powershell.exe -Command \"${local.dc1_powershell_command}\""
-  }
-  SETTINGS
-}
-resource "azurerm_virtual_machine_extension" "Populate-AD" {
-  depends_on=[azurerm_windows_virtual_machine.ADDC]
-
-  name                 = "${var.VirtualMachine["VM_Name"]}-Populate-ActiveDirectory"
-  virtual_machine_id   = azurerm_windows_virtual_machine.ADDC.id
-  publisher            = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"  
-  settings = <<SETTINGS
-  {
-    "commandToExecute": "powershell.exe -Command \"${local.dc1_powershell_adpopulate}\""
-  }
-  SETTINGS
+    }
+    SETTINGS
 }
 
 
+#resource "azurerm_virtual_machine_extension" "populate_ad_server" {
+#  depends_on=[azurerm_windows_virtual_machine.ADDC]
+#
+#    name                 = "${var.VirtualMachine["VM_Name"]}-Populate-AD-Server"
+#    virtual_machine_id   = azurerm_windows_virtual_machine.ADDC.id
+#    publisher            = "Microsoft.Compute"
+#    type                 = "CustomScriptExtension"
+#    type_handler_version = "1.9"
+#    settings = <<SETTINGS
+#    {
+#    "commandToExecute": "powershell.exe -Command \"${local.dc1_powershell_adpopulate}\""
+#    }
+#    SETTINGS
+#  
+#}
+#
+resource "null_resource" "previous" {}
+resource "time_sleep" "wait_30_seconds" {
+  depends_on = [null_resource.previous]
+  create_duration = "420s"
+}
+resource "null_resource" "next" {
+  depends_on = [time_sleep.wait_30_seconds]
+}
